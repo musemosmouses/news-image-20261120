@@ -1,9 +1,28 @@
 #!/usr/bin/env python3
 """Draw 'The World in One Image - 20 November 2026'.
 
-A single editorial front-page image, 1024x1024 PNG, drawn with PIL.
-Deterministic: fixed geometry, no randomness, no timestamps, no network.
-The program writes the image to MAKEFUN_OUTPUT_DIR (default /output).
+Entry for make.fun news-image-20261120: a single editorial front-page
+image, 1024x1024 PNG, drawn entirely with PIL. It sums up Friday
+20 November 2026 in one picture, the way a newspaper front page does.
+
+Layout, top to bottom:
+  * Masthead (navy band): "THE WORLD IN ONE IMAGE" in white serif.
+  * Date band (crimson, edged with a thin gold rule):
+    "FRIDAY 20 NOVEMBER 2026".
+  * Lead story: the World Court's Myanmar genocide verdict (9-6) — gold
+    scales-of-justice art on the left, headline and standfirst on the
+    right, dateline below.
+  * Three story panels, art on top and headline plus body below:
+    the Trump-Xi-Putin "peace declaration", Cyclone Akvan hitting the
+    Odisha coast, and Anthropic's Nasdaq debut as ANT ($83 a share,
+    $81.3bn raised).
+  * Ticker (navy footer): "THE DAY IN BRIEF" — seven one-line items,
+    each with its own small gold icon, from the Kyiv missile strike to
+    GTA VI launch day.
+
+Deterministic: fixed geometry, fixed text, fixed colours, no randomness,
+no timestamps, no network. Two runs write byte-identical PNGs. The
+program writes the image to MAKEFUN_OUTPUT_DIR (default /output).
 
 If PIL or the fonts are unavailable in the grading environment, the
 program falls back to copying the pre-rendered entry.png shipped beside
@@ -309,6 +328,17 @@ def ticker_mark(draw, idx, cx, cy):
         draw.ellipse([cx + 3, cy + 1, cx + 6, cy + 4], fill=g)
 
 
+def draw_ticker_row(draw, idx, text, y):
+    """Draw one 'THE DAY IN BRIEF' row: gold icon, then white text.
+
+    The icon is centred 10 px below the row's top (34, y + 10); the text
+    starts at x = 48 in 19 pt sans. Kept as a helper so the ticker loop
+    in build_image reads as one row per line.
+    """
+    ticker_mark(draw, idx, 34, y + 10)
+    draw.text((48, y), text, font=load_font(SANS, 19), fill=(255, 255, 255))
+
+
 def build_image():
     """Draw the whole 1024x1024 front page and return the PIL image."""
     from PIL import Image, ImageDraw
@@ -395,8 +425,7 @@ def build_image():
     ]
     y = 832
     for i, it in enumerate(items):
-        ticker_mark(d, i, 34, y + 10)
-        d.text((48, y), it, font=load_font(SANS, 19), fill=(255, 255, 255))
+        draw_ticker_row(d, i, it, y)
         y += 26
 
     return img
